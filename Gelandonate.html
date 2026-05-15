@@ -1,0 +1,1799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gelan Donate | Charity Club</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --gold-primary: #D4AF37;
+            --orange-vibrant: #FF8C00;
+            --dark-bg: #0F172A;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--dark-bg);
+            color: white;
+            scroll-behavior: smooth;
+        }
+
+        .serif { font-family: 'Playfair Display', serif; }
+
+        .gold-gradient {
+            background: linear-gradient(135deg, #FF8C00 0%, #D4AF37 50%, #FFD700 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .gold-btn {
+            background: linear-gradient(135deg, #FF8C00 0%, #D4AF37 100%);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .gold-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(212, 175, 55, 0.4);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+        }
+
+        .dark-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1rem;
+            background-color: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .dark-select option {
+            background-color: #1E293B;
+            color: white;
+        }
+
+        .nav-link { position: relative; transition: color 0.3s; cursor: pointer; }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--gold-primary);
+            transition: width 0.3s;
+        }
+        .nav-link:hover::after { width: 100%; }
+
+        .page-fade { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .file-upload-zone {
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+            overflow: hidden;
+            position: relative;
+        }
+        .file-upload-zone:hover {
+            border-color: var(--orange-vibrant);
+            background: rgba(255, 140, 0, 0.05);
+        }
+        .preview-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .progress-bar {
+            transition: width 0.5s ease;
+        }
+        .expired-event {
+            opacity: 0.6;
+            background: rgba(0,0,0,0.3);
+        }
+        .receipt-preview-modal {
+            max-width: 90vw;
+            max-height: 90vh;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <nav id="main-nav" class="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#0F172A]/80 backdrop-blur-md border-b border-white/10">
+        <div id="main-logo" class="flex items-center gap-2 cursor-pointer" onclick="handleLogoClick()">
+            <div class="w-10 h-10 gold-btn rounded-xl flex items-center justify-center">
+                <i data-lucide="heart-handshake" class="text-white"></i>
+            </div>
+            <span class="text-xl font-bold tracking-tight">GELAN <span class="gold-gradient">DONATE</span></span>
+        </div>
+
+        <div class="hidden lg:flex items-center gap-8 font-medium">
+            <a onclick="navigateTo('home')" class="nav-link">Home</a>
+            <a onclick="navigateTo('about')" class="nav-link">About Us</a>
+            <a onclick="navigateTo('events')" class="nav-link">Events</a>
+            <a onclick="navigateTo('donation')" class="nav-link">Donation</a>
+            <a onclick="navigateTo('contact')" class="nav-link">Contact</a>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <div id="user-nav-actions" class="hidden md:flex items-center gap-4">
+                <button onclick="navigateTo('auth')" class="text-sm font-semibold hover:text-orange-400">Sign In</button>
+            </div>
+            <button onclick="toggleMobileMenu()" class="lg:hidden p-2 text-white">
+                <i data-lucide="menu"></i>
+            </button>
+            <button id="donate-now-btn" onclick="navigateTo('donation')" class="hidden sm:block gold-btn px-6 py-2.5 rounded-full font-bold text-sm shadow-lg">Donate Now</button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[55] hidden opacity-0 transition-opacity" onclick="toggleMobileMenu()"></div>
+    <div id="mobile-menu-sidebar" class="fixed top-0 right-0 h-full w-64 bg-[#0F172A] z-[60] transform translate-x-full transition-transform p-6 border-l border-white/10">
+        <div class="flex justify-between items-center mb-8">
+            <span class="font-bold gold-gradient">Menu</span>
+            <button onclick="toggleMobileMenu()"><i data-lucide="x"></i></button>
+        </div>
+        <div class="flex flex-col gap-6 font-semibold" id="mobile-nav-links">
+            <a onclick="navigateTo('home'); toggleMobileMenu()" class="hover:text-orange-400">Home</a>
+            <a onclick="navigateTo('about'); toggleMobileMenu()" class="hover:text-orange-400">About</a>
+            <a onclick="navigateTo('events'); toggleMobileMenu()" class="hover:text-orange-400">Events</a>
+            <a onclick="navigateTo('donation'); toggleMobileMenu()" class="hover:text-orange-400">Donate</a>
+            <a onclick="navigateTo('contact'); toggleMobileMenu()" class="hover:text-orange-400">Contact</a>
+            <hr class="border-white/10">
+            <div id="mobile-auth-actions" class="flex flex-col gap-4"></div>
+        </div>
+    </div>
+
+    <main id="app-content" class="pt-24 flex-grow"></main>
+
+    <footer id="main-footer" class="bg-[#080E1E] border-t border-white/5 pt-16 pb-8 mt-20">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 mb-12 text-slate-400 text-sm">
+            <div>
+                <span class="text-lg font-bold text-white block mb-4">GELAN <span class="gold-gradient">DONATE</span></span>
+                <p>Empowering the youth of Gelan Boys' Boarding Secondary School through dedicated service.</p>
+            </div>
+            <div>
+                <h4 class="font-bold text-white mb-4 uppercase text-xs">Quick Links</h4>
+                <div class="flex flex-col gap-2">
+                    <a class="cursor-pointer hover:text-orange-400" onclick="navigateTo('home')">Home</a>
+                    <a class="cursor-pointer hover:text-orange-400" onclick="navigateTo('about')">About Us</a>
+                    <a class="cursor-pointer hover:text-orange-400" onclick="navigateTo('events')">Events</a>
+                </div>
+            </div>
+            <div>
+                <h4 class="font-bold text-white mb-4 uppercase text-xs">Campaigns</h4>
+                <div class="flex flex-col gap-2">
+                    <a class="cursor-pointer hover:text-orange-400" onclick="navigateTo('donation')">Stationery Drive</a>
+                    <a class="cursor-pointer hover:text-orange-400" onclick="navigateTo('donation')">Clothing Campaign</a>
+                    <a class="cursor-pointer hover:text-orange-400" onclick="navigateTo('cleaning')">Cleaning Initiative</a>
+                </div>
+            </div>
+            <div>
+                <h4 class="font-bold text-white mb-4 uppercase text-xs">Contact</h4>
+                <p>charity@gelanboys.edu.et</p>
+                <p>+251 911 223 344</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Secret Admin Portal -->
+    <div id="admin-modal" class="fixed inset-0 bg-black/95 z-[100] hidden items-center justify-center p-6 backdrop-blur-xl">
+        <div class="max-w-md w-full glass-card p-8 text-center border-orange-500/30">
+            <i data-lucide="shield-lock" class="mx-auto w-12 h-12 text-orange-500 mb-4"></i>
+            <h2 class="text-2xl font-bold mb-2">Restricted Access</h2>
+            <p class="text-slate-400 text-sm mb-6">Enter Admin PIN to manage school donations.</p>
+            <input type="password" id="admin-pass" placeholder="••••••••••••" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 mb-4 focus:outline-none focus:border-orange-500 text-center text-xl tracking-widest">
+            <div class="flex gap-3">
+                <button onclick="closeAdmin()" class="flex-1 px-4 py-3 rounded-xl border border-white/10">Cancel</button>
+                <button onclick="verifyAdmin()" class="flex-1 gold-btn px-4 py-3 rounded-xl font-bold">Verify</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Password Change Modal -->
+    <div id="password-change-modal" class="fixed inset-0 bg-black/95 z-[110] hidden items-center justify-center p-6 backdrop-blur-xl">
+        <div class="max-w-md w-full glass-card p-8">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-bold gold-gradient">Change Admin Password</h3>
+                <button onclick="closePasswordModal()" class="text-slate-400 hover:text-white"><i data-lucide="x"></i></button>
+            </div>
+            <form onsubmit="changeAdminPassword(event)" class="space-y-4">
+                <div>
+                    <label class="text-xs text-slate-400 block mb-1">Current Password</label>
+                    <input type="password" id="current-password" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-orange-500 outline-none">
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 block mb-1">New Password</label>
+                    <input type="password" id="new-password" required minlength="8" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-orange-500 outline-none">
+                    <p class="text-[9px] text-slate-500 mt-1">Must be at least 8 characters</p>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 block mb-1">Confirm New Password</label>
+                    <input type="password" id="confirm-password" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-orange-500 outline-none">
+                </div>
+                <button type="submit" class="w-full gold-btn py-3 rounded-xl font-bold">Update Password</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Set Goal Modal -->
+    <div id="goal-modal" class="fixed inset-0 bg-black/95 z-[110] hidden items-center justify-center p-6 backdrop-blur-xl">
+        <div class="max-w-md w-full glass-card p-8">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-bold gold-gradient">Set Donation Goal</h3>
+                <button onclick="closeGoalModal()" class="text-slate-400 hover:text-white"><i data-lucide="x"></i></button>
+            </div>
+            <form onsubmit="setDonationGoal(event)" class="space-y-4">
+                <div>
+                    <label class="text-xs text-slate-400 block mb-1">Target Amount (ETB)</label>
+                    <input type="number" id="goal-amount" required min="1000" step="1000" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-orange-500 outline-none">
+                    <p class="text-[9px] text-slate-500 mt-1">Current goal: <span id="current-goal-display">350,000</span> ETB</p>
+                </div>
+                <button type="submit" class="w-full gold-btn py-3 rounded-xl font-bold">Update Goal</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Receipt Preview Modal -->
+    <div id="receipt-preview-modal" class="fixed inset-0 bg-black/95 z-[115] hidden items-center justify-center p-6 backdrop-blur-xl">
+        <div class="relative max-w-4xl max-h-[90vh]">
+            <button onclick="closeReceiptPreview()" class="absolute -top-10 right-0 text-white hover:text-orange-400 transition-colors">
+                <i data-lucide="x-circle" class="w-8 h-8"></i>
+            </button>
+            <img id="receipt-full-image" src="" alt="Receipt Preview" class="max-w-full max-h-[85vh] rounded-xl shadow-2xl">
+        </div>
+    </div>
+
+    <!-- Rejection Reason Modal -->
+    <div id="rejection-modal" class="fixed inset-0 bg-black/95 z-[110] hidden items-center justify-center p-6 backdrop-blur-xl">
+        <div class="max-w-md w-full glass-card p-8">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-bold gold-gradient">Rejection Reason</h3>
+                <button onclick="closeRejectionModal()" class="text-slate-400 hover:text-white"><i data-lucide="x"></i></button>
+            </div>
+            <form onsubmit="submitRejection(event)" class="space-y-4">
+                <input type="hidden" id="rejection-sub-id">
+                <div>
+                    <label class="text-xs text-slate-400 block mb-1">Reason for Rejection</label>
+                    <textarea id="rejection-reason" rows="4" required placeholder="Please explain why this donation was rejected..." class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-orange-500 outline-none"></textarea>
+                </div>
+                <button type="submit" class="w-full gold-btn py-3 rounded-xl font-bold">Submit Rejection</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Re-approve Confirmation Modal -->
+    <div id="reapprove-modal" class="fixed inset-0 bg-black/95 z-[110] hidden items-center justify-center p-6 backdrop-blur-xl">
+        <div class="max-w-md w-full glass-card p-8">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-bold gold-gradient">Re-approve Donation</h3>
+                <button onclick="closeReapproveModal()" class="text-slate-400 hover:text-white"><i data-lucide="x"></i></button>
+            </div>
+            <div class="space-y-4">
+                <p class="text-sm text-slate-300">This donation was previously rejected. Are you sure you want to approve it?</p>
+                <div class="flex gap-3">
+                    <button onclick="closeReapproveModal()" class="flex-1 px-4 py-3 rounded-xl border border-white/10">Cancel</button>
+                    <button id="confirm-reapprove-btn" class="flex-1 gold-btn px-4 py-3 rounded-xl font-bold">Yes, Approve</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Management Modal -->
+    <div id="event-modal" class="fixed inset-0 bg-black/95 z-[110] hidden items-center justify-center p-6 backdrop-blur-xl">
+        <div class="max-w-md w-full glass-card p-8">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="event-modal-title" class="text-2xl font-bold gold-gradient">Add New Event</h3>
+                <button onclick="closeEventModal()" class="text-slate-400 hover:text-white"><i data-lucide="x"></i></button>
+            </div>
+            <form onsubmit="saveEvent(event)" class="space-y-4">
+                <input type="hidden" id="event-id">
+                <div>
+                    <label class="text-xs text-slate-400 block mb-1">Event Title</label>
+                    <input type="text" id="event-title" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-orange-500 outline-none">
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 block mb-1">Description</label>
+                    <textarea id="event-desc" rows="3" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-orange-500 outline-none"></textarea>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 block mb-1">Deadline (Date & Time)</label>
+                    <input type="datetime-local" id="event-deadline" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-orange-500 outline-none">
+                </div>
+                <button type="submit" class="w-full gold-btn py-3 rounded-xl font-bold">Save Event</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="notification" class="fixed bottom-8 right-8 z-[200] transform translate-y-20 opacity-0 transition-all duration-300">
+        <div class="glass-card px-6 py-4 flex items-center gap-4 border-l-4 border-orange-500 shadow-2xl bg-[#0F172A]">
+            <div id="notif-icon" class="text-orange-500"></div>
+            <p id="notif-message" class="font-medium text-sm"></p>
+        </div>
+    </div>
+
+    <script>
+        // ========== BACKEND API (MUST BE AT TOP) ==========
+const API_BASE = 'http://localhost:5000/api';
+let authToken = localStorage.getItem('authToken');
+
+
+async function apiCall(endpoint, options = {}) {
+    const headers = { 'Content-Type': 'application/json', ...options.headers };
+    if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+    const response = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Request failed');
+    return data;
+}
+        let currentUser = null;
+        let logoClicks = 0;
+        let authMode = 'login';
+        let currentType = 'money';
+        let currentPath = 'home';
+        let pendingRejectionId = null;
+        let pendingReapproveId = null;
+        let adminPassword = 'D101518@12345';
+        let donationGoal = 350000;
+const storedUser = localStorage.getItem('currentUser');
+if (storedUser) {
+    currentUser = JSON.parse(storedUser);
+}
+
+        
+        // Global submissions storage - Admin sees all
+        let globalSubmissions = [];
+        let messages = [];
+        let events = [];
+
+        async function loadAllData() {
+    try {
+        const evts = await apiCall('/events');
+        events = evts;
+        localStorage.setItem('gelan_events', JSON.stringify(events));
+        const goalData = await apiCall('/admin/goal');
+        donationGoal = parseInt(goalData.goal) || 350000;
+        localStorage.setItem('gelan_donation_goal', donationGoal);
+        if (currentUser && authToken) {
+            if (currentUser.role === 'admin') {
+                const allDon = await apiCall('/donations/all');
+                globalSubmissions = allDon;
+                const allMsg = await apiCall('/messages/all');
+                messages = allMsg;
+            } else {
+                const myDon = await apiCall('/donations/my');
+                globalSubmissions = myDon;
+                const myMsg = await apiCall('/messages/my');
+                messages = myMsg;
+            }
+        } else {
+            globalSubmissions = [];
+            messages = [];
+        }
+    } catch (err) {
+        console.warn('Backend not reachable, using localStorage fallback');
+        const storedSub = localStorage.getItem('gelan_all_submissions');
+        if (storedSub) globalSubmissions = JSON.parse(storedSub);
+        const storedMsg = localStorage.getItem('gelan_all_messages');
+        if (storedMsg) messages = JSON.parse(storedMsg);
+        const storedEv = localStorage.getItem('gelan_events');
+        if (storedEv) events = JSON.parse(storedEv);
+        const storedGoal = localStorage.getItem('gelan_donation_goal');
+        if (storedGoal) donationGoal = parseInt(storedGoal);
+    }
+    // Force the home page to render even if data fails
+    if (currentPath === 'home') navigateTo('home');
+}
+
+       
+        function saveAllSubmissions() {
+            localStorage.setItem('gelan_all_submissions', JSON.stringify(globalSubmissions));
+        }
+
+        function saveAllMessages() {
+            localStorage.setItem('gelan_all_messages', JSON.stringify(messages));
+        }
+
+       function getUserSubmissions() {
+    if (!currentUser) return [];
+    return globalSubmissions.filter(s => s.donorEmail === currentUser.email || s.donor_email === currentUser.email);
+}
+
+        function addSubmission(submission) {
+            globalSubmissions.unshift(submission);
+            saveAllSubmissions();
+        }
+
+        function updateSubmission(id, updates) {
+            const index = globalSubmissions.findIndex(s => s.id === id);
+            if (index !== -1) {
+                globalSubmissions[index] = { ...globalSubmissions[index], ...updates };
+                saveAllSubmissions();
+            }
+        }
+
+        function deleteSubmissionById(id) {
+            globalSubmissions = globalSubmissions.filter(s => s.id !== id);
+            saveAllSubmissions();
+        }
+
+        function addMessage(message) {
+            messages.unshift(message);
+            saveAllMessages();
+        }
+
+        function updateMessage(id, updates) {
+            const index = messages.findIndex(m => m.id === id);
+            if (index !== -1) {
+                messages[index] = { ...messages[index], ...updates };
+                saveAllMessages();
+            }
+        }
+
+        function loadEventsFromStorage() {
+            const stored = localStorage.getItem('gelan_events');
+            if (stored) {
+                events = JSON.parse(stored);
+            } else {
+                events = [
+                    { id: 'evt1', title: 'Stationery Mega Drive', description: 'Collect exercise books, pens, and mathematical sets for grade 10 students.', deadline: '2025-08-15T23:59' },
+                    { id: 'evt2', title: 'Winter Clothing Campaign', description: 'Gently used sweaters, jackets, and blankets needed before rainy season.', deadline: '2025-07-30T18:00' }
+                ];
+            }
+            saveEventsToStorage();
+        }
+
+        function saveEventsToStorage() {
+            localStorage.setItem('gelan_events', JSON.stringify(events));
+        }
+
+
+        function addEvent(title, description, deadline) {
+            events.push({
+                id: 'evt_' + Date.now(),
+                title: title.trim(),
+                description: description.trim(),
+                deadline: deadline
+            });
+            saveEventsToStorage();
+        }
+
+        function updateEvent(id, title, description, deadline) {
+            const index = events.findIndex(e => e.id === id);
+            if (index !== -1) {
+                events[index] = { ...events[index], title, description, deadline };
+                saveEventsToStorage();
+            }
+        }
+
+        function deleteEvent(id) {
+            events = events.filter(e => e.id !== id);
+            saveEventsToStorage();
+        }
+
+        function loadGoalFromStorage() {
+            const stored = localStorage.getItem('gelan_donation_goal');
+            if (stored) {
+                donationGoal = parseInt(stored);
+            }
+        }
+
+        function saveGoalToStorage() {
+            localStorage.setItem('gelan_donation_goal', donationGoal);
+        }
+
+        async function fetchGlobalStats() {
+    try {
+        const stats = await apiCall('/donations/stats');
+        return {
+            approvedMoney: stats.approvedMoney || 0,
+            totalDonors: stats.totalDonors || 0,
+            itemsPledged: stats.itemsPledged || 0,
+            activeEvents: events.filter(ev => new Date(ev.deadline) > new Date()).length,
+            percentage: Math.min(100, Math.floor(((stats.approvedMoney || 0) / donationGoal) * 100))
+        };
+    } catch (err) {
+        console.warn('Failed to fetch global stats:', err);
+        return {
+            approvedMoney: 0,
+            totalDonors: 0,
+            itemsPledged: 0,
+            activeEvents: events.filter(ev => new Date(ev.deadline) > new Date()).length,
+            percentage: 0
+        };
+    }
+}
+
+
+        const pages = {
+            home: `
+                <section class="page-fade max-w-7xl mx-auto px-6 py-12 flex flex-col items-center text-center">
+                    <span class="bg-orange-500/10 text-orange-400 px-4 py-1 rounded-full text-xs font-bold mb-6 tracking-widest uppercase border border-orange-500/20">Established 2012 E.C</span>
+                    <h1 class="serif text-5xl md:text-7xl mb-8 leading-tight">Empowering <span class="gold-gradient">Gelan Boys</span><br>To Lead Through Service</h1>
+                    <p class="text-slate-400 text-lg max-w-2xl mb-12">Bridging the gap between school philanthropy and logistical coordination.</p>
+                    <div class="flex gap-4">
+                        <button onclick="navigateTo('events')" class="gold-btn px-8 py-4 rounded-full font-bold">Explore Campaigns</button>
+                        <button onclick="navigateTo('about')" class="px-8 py-4 rounded-full border border-white/10 hover:bg-white/5 transition-colors font-bold">Our Story</button>
+                    </div>
+                    
+                    <div class="w-full max-w-5xl mt-16 glass-card p-8 md:p-10">
+                        <h2 class="serif text-3xl md:text-4xl mb-6 gold-gradient">Impact Report</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <div class="bg-white/5 rounded-2xl p-5 border border-white/10">
+                                <i data-lucide="target" class="w-8 h-8 text-orange-400 mb-3"></i>
+                                <p class="text-2xl font-bold gold-gradient" id="stat-percentage">0%</p>
+                                <p class="text-xs text-slate-400 uppercase tracking-wider">of Goal Reached</p>
+                                <div class="mt-2 h-1.5 w-full bg-white/10 rounded-full overflow-hidden"><div id="progress-fill" class="h-full gold-btn progress-bar" style="width:0%"></div></div>
+                                <p class="text-[11px] text-slate-500 mt-2" id="goal-display">Goal: ${donationGoal.toLocaleString()} ETB</p>
+                            </div>
+                            <div class="bg-white/5 rounded-2xl p-5 border border-white/10">
+                                <i data-lucide="banknote" class="w-8 h-8 text-emerald-400 mb-3"></i>
+                                <p class="text-2xl font-bold text-white" id="stat-funds">0 ETB</p>
+                                <p class="text-xs text-slate-400 uppercase tracking-wider">Approved Donations</p>
+                            </div>
+                            <div class="bg-white/5 rounded-2xl p-5 border border-white/10">
+                                <i data-lucide="users" class="w-8 h-8 text-sky-400 mb-3"></i>
+                                <p class="text-2xl font-bold text-white" id="stat-donors">0</p>
+                                <p class="text-xs text-slate-400 uppercase tracking-wider">Active Donors</p>
+                            </div>
+                            <div class="bg-white/5 rounded-2xl p-5 border border-white/10">
+                                <i data-lucide="calendar" class="w-8 h-8 text-amber-400 mb-3"></i>
+                                <p class="text-2xl font-bold text-white" id="stat-events">0</p>
+                                <p class="text-xs text-slate-400 uppercase tracking-wider">Active Campaigns</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap justify-center gap-8 text-sm text-slate-300">
+                            <div class="flex items-center gap-2"><i data-lucide="package" class="w-4 h-4 text-teal-400"></i> <span id="stat-items">0</span> items contributed</div>
+                            <div class="flex items-center gap-2"><i data-lucide="heart" class="w-4 h-4 text-rose-400"></i> 100% transparent</div>
+                        </div>
+                    </div>
+                </section>
+            `,
+            about: `
+                <section class="page-fade max-w-5xl mx-auto px-6 py-12">
+                    <div class="text-center mb-16"><h2 class="serif text-4xl mb-4">Our <span class="gold-gradient">Journey</span></h2></div>
+                    <div class="grid md:grid-cols-2 gap-12">
+                        <div class="glass-card p-8">
+                             <h3 class="text-2xl font-bold mb-4 text-orange-400">Mission</h3>
+                             <p class="text-slate-300 leading-relaxed mb-6">Providing a transparent and efficient way for Gelan Boys students and alumni to contribute back to their community.</p>
+                             <div class="border-t border-white/10 pt-6">
+                                <h4 class="text-sm font-bold text-white uppercase mb-4 tracking-widest">Club Leadership</h4>
+                                <div class="space-y-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center text-orange-400"><i data-lucide="award"></i></div>
+                                        <div><p class="font-bold text-sm">Teacher Alex</p><p class="text-[10px] text-slate-500">Club Leader</p></div>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-lg bg-teal-500/20 flex items-center justify-center text-teal-400"><i data-lucide="brain-circuit"></i></div>
+                                        <div><p class="font-bold text-sm">Psychiatrist Seyoum</p><p class="text-[10px] text-slate-500">Assistant / Support</p></div>
+                                    </div>
+                                </div>
+                             </div>
+                        </div>
+                        <div class="glass-card p-8">
+                             <h3 class="text-2xl font-bold mb-4 text-orange-400">Developers</h3>
+                             <div class="grid grid-cols-2 gap-2 text-sm text-slate-400">
+                                <span>Biniyam Tekeste</span><span>Chera Habtamu</span>
+                                <span>Dabale Girma</span><span>Nafyad Mamo</span>
+                                <span>Salemnew Doyamo</span><span>Yeabsira Yeshigeta</span>
+                             </div>
+                        </div>
+                    </div>
+                </section>
+            `,
+            events: `
+                <section class="page-fade max-w-6xl mx-auto px-6 py-12">
+                    <h2 class="serif text-4xl mb-12 text-center">Active <span class="gold-gradient">Campaigns</span></h2>
+                    <div class="grid md:grid-cols-4 gap-6">
+                        ${['Stationery', 'Clothing', 'Money', 'Cleaning'].map(type => `
+                            <div class="glass-card p-6 text-center hover:border-orange-500 transition-colors cursor-pointer" onclick="navigateTo('${type === 'Cleaning' ? 'cleaning' : 'donation'}')">
+                                <div class="w-12 h-12 gold-btn rounded-xl flex items-center justify-center mx-auto mb-4">
+                                    <i data-lucide="${type === 'Cleaning' ? 'brush' : 'award'}"></i>
+                                </div>
+                                <h4 class="font-bold mb-4">${type} Drive</h4>
+                                <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Open for Submissions</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="mt-16">
+                        <h3 class="serif text-3xl text-center mb-8 gold-gradient">Upcoming Special Events</h3>
+                        <div id="events-list" class="grid md:grid-cols-3 gap-6"></div>
+                    </div>
+                </section>
+            `,
+            contact: `
+                <section class="page-fade max-w-6xl mx-auto px-6 py-12">
+                    <div class="grid md:grid-cols-2 gap-12">
+                        <div class="glass-card p-10">
+                            <h2 class="serif text-3xl mb-8">Send us a <span class="gold-gradient">Message</span></h2>
+                            <form onsubmit="handleGeneralMessage(event)" class="space-y-4">
+                                <input id="c-name" required type="text" placeholder="Full Name" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-orange-500">
+                                <input id="c-email" required type="email" placeholder="Email" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-orange-500">
+                                <textarea id="c-msg" required rows="4" placeholder="Your Message" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-orange-500"></textarea>
+                                <button class="gold-btn px-8 py-3 rounded-xl font-bold">Send Message</button>
+                            </form>
+                        </div>
+                        <div class="space-y-6">
+                            <h2 class="serif text-3xl mb-8">Contact <span class="gold-gradient">Information</span></h2>
+                            <div class="glass-card p-6 flex items-center gap-4">
+                                <div class="w-12 h-12 bg-orange-500/10 rounded-xl flex items-center justify-center text-orange-500"><i data-lucide="mail"></i></div>
+                                <div><p class="text-xs text-slate-500 uppercase font-bold tracking-widest">Email Address</p><p class="font-semibold">charity@gelanboys.edu.et</p></div>
+                            </div>
+                            <div class="glass-card p-6 flex items-center gap-4">
+                                <div class="w-12 h-12 bg-orange-500/10 rounded-xl flex items-center justify-center text-orange-500"><i data-lucide="phone"></i></div>
+                                <div><p class="text-xs text-slate-500 uppercase font-bold tracking-widest">Phone Number</p><p class="font-semibold">+251 911 223 344</p></div>
+                            </div>
+                            <div class="glass-card p-6 flex items-center gap-4">
+                                <div class="w-12 h-12 bg-orange-500/10 rounded-xl flex items-center justify-center text-orange-500"><i data-lucide="map-pin"></i></div>
+                                <div><p class="text-xs text-slate-500 uppercase font-bold tracking-widest">Location</p><p class="font-semibold">Gelan Boys' Boarding Secondary School, Kality, Addis Ababa</p></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            `,
+            cleaning: `
+                <section class="page-fade max-w-2xl mx-auto px-6 py-12">
+                    <div class="glass-card p-10">
+                        <h2 class="serif text-3xl mb-8">Cleaning <span class="text-teal-400">Campaign</span></h2>
+                        <form onsubmit="handleCleaningSubmit(event)" class="space-y-6">
+                            <div class="bg-teal-500/10 p-4 rounded-xl border border-teal-500/20 mb-6">
+                                <p class="text-xs text-teal-400 font-bold uppercase tracking-widest">Description</p>
+                                <p class="text-sm text-slate-300">Join us in cleaning our dormitories and classrooms this Saturday at 2:00 PM.</p>
+                            </div>
+                            <input required type="text" id="clean-name" placeholder="Volunteer Name" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-teal-500">
+                            <select id="clean-target" class="w-full dark-select border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-teal-500">
+                                <option>Dormitory Block A</option>
+                                <option>Dormitory Block B</option>
+                                <option>Main Academic Building</option>
+                                <option>School Compound</option>
+                            </select>
+                            <button type="submit" class="w-full bg-teal-600 py-4 rounded-xl font-bold hover:bg-teal-500 transition-colors">Register as Volunteer</button>
+                        </form>
+                    </div>
+                </section>
+            `,
+            donation: `
+                <section class="page-fade max-w-4xl mx-auto px-6 py-12">
+                    <div class="glass-card p-10">
+                        <h2 class="serif text-3xl mb-8 text-center">Donation <span class="gold-gradient">Portal</span></h2>
+                        <div id="bank-info" class="mb-10 bg-white/5 rounded-2xl p-6 border border-white/10">
+                            <h3 class="text-sm font-bold mb-4 text-orange-400 uppercase tracking-widest">Bank Details</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                                <div class="bg-black/20 p-4 rounded-xl border border-white/5"><p>TeleBirr</p><p class="font-bold text-orange-400">0912345678</p></div>
+                                <div class="bg-black/20 p-4 rounded-xl border border-white/5"><p>CBE</p><p class="font-bold text-blue-400">100045678901</p></div>
+                                <div class="bg-black/20 p-4 rounded-xl border border-white/5"><p>Awash</p><p class="font-bold text-yellow-400">013209876543</p></div>
+                            </div>
+                        </div>
+                        <div id="drop-info" class="hidden mb-10 bg-white/5 rounded-2xl p-6 border border-teal-500/30">
+                            <h3 class="text-sm font-bold mb-4 text-teal-400 uppercase tracking-widest">Submission Location</h3>
+                            <div class="flex items-center gap-4">
+                                <i data-lucide="map-pin" class="text-teal-400"></i>
+                                <p class="text-sm font-bold">Admin Building, Charity Club Office (Room 12)</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-10">
+                            <button onclick="setDonType('money')" id="btn-money" class="p-4 rounded-xl bg-orange-500/20 border border-orange-500 font-bold text-xs text-white">Money</button>
+                            <button onclick="setDonType('stationery')" id="btn-stationery" class="p-4 rounded-xl bg-white/5 border border-white/10 font-bold text-xs text-slate-400">Stationery</button>
+                            <button onclick="setDonType('clothing')" id="btn-clothing" class="p-4 rounded-xl bg-white/5 border border-white/10 font-bold text-xs text-slate-400">Clothing</button>
+                        </div>
+                        <form id="form-money" onsubmit="handleMoneySubmit(event)" class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <input required type="text" id="m-name" placeholder="Your Name" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-orange-500">
+                                <input required type="number" id="m-amount" placeholder="Amount (ETB)" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-orange-500">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-xs text-orange-400 font-bold uppercase tracking-widest">Payment Receipt</label>
+                                <div onclick="document.getElementById('m-file').click()" class="file-upload-zone rounded-xl h-48 flex items-center justify-center cursor-pointer">
+                                    <div id="m-placeholder">
+                                        <i data-lucide="upload-cloud" class="mx-auto text-orange-500 mb-2"></i>
+                                        <p class="text-sm">Click to upload screenshot</p>
+                                    </div>
+                                    <img id="m-preview" class="preview-img hidden">
+                                    <input required type="file" id="m-file" class="hidden" accept="image/*" onchange="handleFile(this, 'm')">
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full gold-btn py-4 rounded-xl font-bold">Submit Donation</button>
+                        </form>
+                        <form id="form-items" onsubmit="handleItemSubmit(event)" class="hidden space-y-6">
+                            <input required type="text" id="i-name" placeholder="Your Name" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-teal-500">
+                            <select id="i-select" class="w-full dark-select border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-teal-500"></select>
+                            <textarea id="i-desc" placeholder="Details (quantity, condition)" rows="3" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-teal-500"></textarea>
+                            <button type="submit" class="w-full gold-btn py-4 rounded-xl font-bold">Pledge Items</button>
+                        </form>
+                    </div>
+                </section>
+            `,
+            profile: `
+                <section class="page-fade max-w-4xl mx-auto px-6 py-12">
+                    <div class="grid md:grid-cols-3 gap-8">
+                        <div class="glass-card p-8 text-center flex flex-col items-center">
+                            <div class="w-20 h-20 rounded-full bg-orange-500 mb-4 flex items-center justify-center font-bold text-2xl" id="p-initials"></div>
+                            <div class="w-full space-y-3 mb-6">
+                                <input type="text" id="p-name-edit" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-center font-bold text-lg w-full focus:border-orange-500 focus:outline-none" onchange="updateProfileInfo()">
+                                <textarea id="p-bio-edit" rows="2" placeholder="Tell us about yourself..." class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-slate-400 w-full focus:border-orange-500 focus:outline-none" onchange="updateProfileInfo()"></textarea>
+                            </div>
+                            <p class="text-[10px] text-slate-500 mb-6" id="p-email"></p>
+                            <div class="bg-white/5 p-3 rounded-lg border border-white/10 w-full mb-6 text-left">
+                                <p class="text-[10px] text-orange-400 font-bold uppercase mb-1">Account ID</p>
+                                <p class="font-mono text-[10px]" id="p-id"></p>
+                            </div>
+                            <button onclick="handleLogout()" class="w-full py-2 bg-red-500/10 text-red-500 rounded-lg text-sm border border-red-500/20">Sign Out</button>
+                        </div>
+                        <div class="col-span-2 space-y-6">
+                            <div class="glass-card p-8">
+                                <h4 class="font-bold mb-6 flex items-center gap-2"><i data-lucide="history" class="w-5 h-5 text-orange-400"></i> My History</h4>
+                                <div id="user-history" class="space-y-4 max-h-[300px] overflow-y-auto pr-2"></div>
+                            </div>
+                           <div class="glass-card p-8">
+    <div class="flex justify-between items-center mb-6">
+        <h4 class="font-bold flex items-center gap-2"><i data-lucide="message-square" class="w-5 h-5 text-teal-400"></i> Messages & Replies</h4>
+        <button onclick="refreshMessages()" class="text-xs gold-btn px-3 py-1 rounded-full">Refresh</button>
+    </div>
+    <div id="user-messages" class="space-y-4 max-h-[300px] overflow-y-auto pr-2"></div>
+</div>
+                        </div>
+                    </div>
+                </section>
+            `,
+            auth: `
+                <section class="page-fade max-w-md mx-auto px-6 py-12">
+                    <div class="glass-card p-10 text-center">
+                        <h2 id="a-title" class="text-3xl font-bold mb-8">Sign In</h2>
+                        <form onsubmit="handleAuth(event)" class="space-y-4 text-left">
+                            <div id="a-signup" class="hidden">
+                                <label class="text-xs text-slate-500 ml-2 mb-1 block">Full Name</label>
+                                <input id="a-name" type="text" placeholder="Gelan Student" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-orange-500">
+                            </div>
+                           <label class="text-xs text-slate-500 ml-2 mb-1 block">Email</label>
+<input required id="a-email" type="email" placeholder="student@gelanboys.edu.et" autocomplete="off" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-orange-500">
+
+<label class="text-xs text-slate-500 ml-2 mb-1 block">Password</label>
+<input required type="password" placeholder="••••••••" autocomplete="new-password" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-orange-500">
+                            <button type="submit" class="w-full gold-btn py-4 rounded-xl font-bold mt-4">Continue</button>
+                        </form>
+                        <p class="mt-6 text-sm text-slate-500">
+                            <span id="a-toggle-text">New to Charity Club?</span>
+                            <a href="#" onclick="toggleAuth()" id="a-toggle-link" class="text-orange-400 font-bold ml-1">Sign Up</a>
+                        </p>
+                    </div>
+                </section>
+            `,
+            adminDashboard: `
+                <section class="page-fade max-w-7xl mx-auto px-6 py-12 min-h-screen">
+                    <div class="flex justify-between items-center mb-10">
+                         <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 gold-btn rounded-xl flex items-center justify-center">
+                                <i data-lucide="shield-check" class="text-white"></i>
+                            </div>
+                            <div>
+                                <h2 class="serif text-3xl">Admin <span class="gold-gradient">Command</span></h2>
+                                <p class="text-xs text-slate-500 font-bold uppercase tracking-widest">Restricted Management Area</p>
+                            </div>
+                         </div>
+                         <div class="flex gap-3">
+                             <button onclick="openGoalModal()" class="px-4 py-2 bg-green-500/10 text-green-400 border border-green-500/20 rounded-xl font-bold text-sm hover:bg-green-500/20 transition-all flex items-center gap-2">
+                                 <i data-lucide="target" class="w-4 h-4"></i> Set Goal
+                             </button>
+                             <button onclick="openPasswordModal()" class="px-4 py-2 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl font-bold text-sm hover:bg-blue-500/20 transition-all flex items-center gap-2">
+                                 <i data-lucide="key" class="w-4 h-4"></i> Change Password
+                             </button>
+                            <button onclick="closeAdminDashboard()" class="px-6 py-2 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl font-bold text-sm hover:bg-red-500/20 transition-all">Close Dashboard</button>
+                         </div>
+                    </div>
+                    
+                    <div id="admin-stats" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10"></div>
+                    
+                    <div class="space-y-10">
+                        <div class="glass-card overflow-hidden">
+                            <div class="p-6 border-b border-white/5 flex justify-between items-center bg-white/5">
+                                <div class="flex items-center gap-3">
+                                    <i data-lucide="list-filter" class="w-4 h-4 text-orange-400"></i>
+                                    <h3 class="font-bold">Recent Submissions (All Users)</h3>
+                                </div>
+                                <div class="flex gap-2">
+                                    <span class="px-3 py-1 bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 rounded-full text-[10px] font-bold" id="admin-pending-badge">0 Pending</span>
+                                    <span class="px-3 py-1 bg-white/5 text-slate-400 border border-white/10 rounded-full text-[10px] font-bold" id="admin-count">0 items</span>
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-sm">
+                                    <thead class="bg-white/5 text-slate-400">
+                                        <tr class="border-b border-white/5">
+                                            <th class="p-4 uppercase text-[10px] tracking-widest">Date</th>
+                                            <th class="p-4 uppercase text-[10px] tracking-widest">Donor Details</th>
+                                            <th class="p-4 uppercase text-[10px] tracking-widest">Type</th>
+                                            <th class="p-4 uppercase text-[10px] tracking-widest">Description</th>
+                                            <th class="p-4 text-center uppercase text-[10px] tracking-widest">Evidence</th>
+                                            <th class="p-4 text-center uppercase text-[10px] tracking-widest">Status</th>
+                                            <th class="p-4 text-right uppercase text-[10px] tracking-widest">Actions</th>
+                                         </tr>
+                                    </thead>
+                                    <tbody id="admin-table" class="divide-y divide-white/5"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="glass-card overflow-hidden">
+                            <div class="p-6 border-b border-white/5 flex justify-between items-center bg-white/5">
+                                <div class="flex items-center gap-3">
+                                    <i data-lucide="calendar-plus" class="w-4 h-4 text-teal-400"></i>
+                                    <h3 class="font-bold">Event Management (Active & Expired)</h3>
+                                </div>
+                                <button onclick="openEventModal()" class="gold-btn text-xs px-4 py-2 rounded-full font-bold">+ Add New Event</button>
+                            </div>
+                            <div id="admin-events-list" class="p-4"></div>
+                        </div>
+
+                        <div class="glass-card overflow-hidden">
+                            <div class="p-6 border-b border-white/5 bg-white/5">
+                                <div class="flex items-center gap-3">
+                                    <i data-lucide="mail" class="w-4 h-4 text-teal-400"></i>
+                                    <h3 class="font-bold">User Inquiries</h3>
+                                </div>
+                            </div>
+                            <div id="admin-messages-container" class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                        </div>
+                    </div>
+                </section>
+            `
+        };
+
+       async function updateHomeStats() {
+    const stats = await fetchGlobalStats();
+    const pctElem = document.getElementById('stat-percentage');
+    const fillElem = document.getElementById('progress-fill');
+    const fundsElem = document.getElementById('stat-funds');
+    const donorsElem = document.getElementById('stat-donors');
+    const itemsElem = document.getElementById('stat-items');
+    const goalDisplay = document.getElementById('goal-display');
+    
+    if (pctElem) pctElem.innerText = `${stats.percentage}%`;
+    if (fillElem) fillElem.style.width = `${stats.percentage}%`;
+    if (fundsElem) fundsElem.innerText = `${stats.approvedMoney.toLocaleString()} ETB`;
+    if (donorsElem) donorsElem.innerText = stats.totalDonors;
+    if (itemsElem) itemsElem.innerText = stats.itemsPledged;
+    if (goalDisplay) goalDisplay.innerText = `Goal: ${donationGoal.toLocaleString()} ETB`;
+}
+        
+
+        function openGoalModal() {
+            document.getElementById('goal-amount').value = donationGoal;
+            document.getElementById('current-goal-display').innerText = donationGoal.toLocaleString();
+            document.getElementById('goal-modal').style.display = 'flex';
+            lucide.createIcons();
+        }
+
+        function closeGoalModal() {
+            document.getElementById('goal-modal').style.display = 'none';
+        }
+
+        async function setDonationGoal(e) {
+    e.preventDefault();
+    const newGoal = parseInt(document.getElementById('goal-amount').value);
+    if (newGoal < 1000) {
+        showNotification('alert-circle', 'Goal must be at least 1,000 ETB');
+        return;
+    }
+    try {
+        await apiCall('/admin/goal', { method: 'PUT', body: JSON.stringify({ goal: newGoal }) });
+        donationGoal = newGoal;
+        localStorage.setItem('gelan_donation_goal', newGoal);
+        showNotification('check-circle', `Goal updated to ${donationGoal.toLocaleString()} ETB`);
+        closeGoalModal();
+        updateHomeStats();
+        if (currentPath === 'adminDashboard') renderAdmin();
+    } catch (err) {
+        showNotification('alert-circle', err.message);
+    }
+}
+
+       
+
+        function renderEventsList() {
+            const eventsContainer = document.getElementById('events-list');
+            if (eventsContainer) {
+                const activeEvents = events.filter(ev => new Date(ev.deadline) > new Date());
+                if (activeEvents.length > 0) {
+                    eventsContainer.innerHTML = activeEvents.map(ev => `
+                        <div class="glass-card p-6 hover:border-orange-500 transition-all">
+                            <div class="w-12 h-12 gold-btn rounded-xl flex items-center justify-center mx-auto mb-4">
+                                <i data-lucide="calendar-clock"></i>
+                            </div>
+                            <h4 class="font-bold text-lg mb-2 text-center">${ev.title}</h4>
+                            <p class="text-xs text-slate-400 mb-3 text-center">${ev.description}</p>
+                            <div class="flex justify-between items-center text-[10px] font-mono mt-4 pt-3 border-t border-white/10">
+                                <span class="text-orange-400">📅 ${new Date(ev.deadline).toLocaleDateString()}</span>
+                                <span class="text-slate-500"><i data-lucide="clock" class="inline w-3 h-3"></i> ${new Date(ev.deadline).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    eventsContainer.innerHTML = '<div class="col-span-full text-center py-12 text-slate-500"><i data-lucide="calendar-x" class="w-12 h-12 mx-auto mb-3 opacity-40"></i><p>No upcoming events scheduled.</p></div>';
+                }
+                lucide.createIcons();
+            }
+        }
+
+        function renderAdminEvents() {
+            const container = document.getElementById('admin-events-list');
+            if (!container) return;
+            
+            const now = new Date();
+            const activeEvents = events.filter(ev => new Date(ev.deadline) > now);
+            const expiredEvents = events.filter(ev => new Date(ev.deadline) <= now);
+            const allEvents = [...activeEvents, ...expiredEvents];
+            
+            if (allEvents.length === 0) {
+                container.innerHTML = '<div class="text-center text-slate-500 py-8">No events created. Click "Add New Event" to start.</div>';
+                return;
+            }
+            
+            container.innerHTML = allEvents.map(ev => {
+                const isExpired = new Date(ev.deadline) <= now;
+                return `
+                    <div class="flex justify-between items-center p-4 border-b border-white/5 hover:bg-white/5 transition-colors ${isExpired ? 'expired-event' : ''}">
+                        <div class="flex-1">
+                            <p class="font-bold text-sm ${isExpired ? 'text-slate-500' : 'text-white'}">${ev.title} ${isExpired ? '<span class="text-red-400 text-[9px] ml-2">(Expired)</span>' : ''}</p>
+                            <p class="text-xs text-slate-400 mt-1">${ev.description}</p>
+                            <p class="text-[10px] ${isExpired ? 'text-red-400' : 'text-orange-400'} mt-2">⏰ ${isExpired ? 'Expired on:' : 'Deadline:'} ${new Date(ev.deadline).toLocaleString()}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="editEvent('${ev.id}')" class="p-2 bg-blue-500/10 rounded-lg text-blue-400 hover:bg-blue-500/20 transition-all" title="Edit">
+                                <i data-lucide="edit-3" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="deleteEventById('${ev.id}')" class="p-2 bg-red-500/10 rounded-lg text-red-400 hover:bg-red-500/20 transition-all" title="Delete">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function openPasswordModal() {
+            document.getElementById('current-password').value = '';
+            document.getElementById('new-password').value = '';
+            document.getElementById('confirm-password').value = '';
+            document.getElementById('password-change-modal').style.display = 'flex';
+            lucide.createIcons();
+        }
+
+        function closePasswordModal() {
+            document.getElementById('password-change-modal').style.display = 'none';
+        }
+
+        async function changeAdminPassword(e) {
+    e.preventDefault();
+    const cur = document.getElementById('current-password').value;
+    const newp = document.getElementById('new-password').value;
+    const conf = document.getElementById('confirm-password').value;
+    if (newp.length < 8) {
+        showNotification('alert-circle', 'Password must be at least 8 characters');
+        return;
+    }
+    if (newp !== conf) {
+        showNotification('alert-circle', 'New passwords do not match');
+        return;
+    }
+    try {
+        await apiCall('/admin/password', {
+            method: 'PUT',
+            body: JSON.stringify({ currentPassword: cur, newPassword: newp })
+        });
+        adminPassword = newp;
+        showNotification('check-circle', 'Password changed!');
+        closePasswordModal();
+    } catch (err) {
+        showNotification('alert-circle', err.message);
+    }
+}
+       
+        
+
+        function openReceiptPreview(imageUrl) {
+            const modal = document.getElementById('receipt-preview-modal');
+            const img = document.getElementById('receipt-full-image');
+            img.src = imageUrl;
+            modal.style.display = 'flex';
+            lucide.createIcons();
+        }
+
+        function closeReceiptPreview() {
+            document.getElementById('receipt-preview-modal').style.display = 'none';
+            document.getElementById('receipt-full-image').src = '';
+        }
+
+        function openEventModal(editId = null) {
+            if (editId) {
+                const ev = events.find(e => e.id === editId);
+                if (ev) {
+                    document.getElementById('event-id').value = ev.id;
+                    document.getElementById('event-title').value = ev.title;
+                    document.getElementById('event-desc').value = ev.description;
+                    document.getElementById('event-deadline').value = ev.deadline.slice(0, 16);
+                    document.getElementById('event-modal-title').innerText = 'Edit Event';
+                }
+            } else {
+                document.getElementById('event-id').value = '';
+                document.getElementById('event-title').value = '';
+                document.getElementById('event-desc').value = '';
+                document.getElementById('event-deadline').value = '';
+                document.getElementById('event-modal-title').innerText = 'Add New Event';
+            }
+            document.getElementById('event-modal').style.display = 'flex';
+            lucide.createIcons();
+        }
+
+        function closeEventModal() {
+            document.getElementById('event-modal').style.display = 'none';
+        }
+
+        async function saveEvent(e) {
+    e.preventDefault();
+    const id = document.getElementById('event-id').value;
+    const title = document.getElementById('event-title').value;
+    const desc = document.getElementById('event-desc').value;
+    const deadline = document.getElementById('event-deadline').value;
+    if (!title || !desc || !deadline) {
+        showNotification('alert-circle', 'Please fill in all fields');
+        return;
+    }
+    try {
+        if (id) {
+            await apiCall(`/events/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify({ title, description: desc, deadline })
+            });
+            const idx = events.findIndex(e => e.id === id);
+            if (idx !== -1) events[idx] = { id, title, description: desc, deadline };
+            showNotification('check-circle', 'Event updated successfully');
+        } else {
+            const result = await apiCall('/events', {
+                method: 'POST',
+                body: JSON.stringify({ title, description: desc, deadline })
+            });
+            events.push({ id: result.eventId, title, description: desc, deadline });
+            showNotification('check-circle', 'Event added successfully');
+        }
+        localStorage.setItem('gelan_events', JSON.stringify(events));
+        closeEventModal();
+        if (currentPath === 'adminDashboard') renderAdmin();
+        if (currentPath === 'events') renderEventsList();
+        updateHomeStats();
+    } catch (err) {
+        showNotification('alert-circle', err.message);
+    }
+}
+        
+        function editEvent(id) {
+            openEventModal(id);
+        }
+        async function deleteEventById(id) {
+    if (!confirm('Delete this event?')) return;
+    try {
+        await apiCall(`/events/${id}`, { method: 'DELETE' });
+        events = events.filter(e => e.id !== id);
+        localStorage.setItem('gelan_events', JSON.stringify(events));
+        showNotification('trash-2', 'Event deleted');
+        if (currentPath === 'adminDashboard') renderAdmin();
+        if (currentPath === 'events') renderEventsList();
+        updateHomeStats();
+    } catch (err) {
+        showNotification('alert-circle', err.message);
+    }
+}
+    
+
+        function openRejectionModal(subId) {
+            pendingRejectionId = subId;
+            document.getElementById('rejection-sub-id').value = subId;
+            document.getElementById('rejection-reason').value = '';
+            document.getElementById('rejection-modal').style.display = 'flex';
+            lucide.createIcons();
+        }
+
+        function closeRejectionModal() {
+            document.getElementById('rejection-modal').style.display = 'none';
+            pendingRejectionId = null;
+        }
+        function openReapproveModal(subId) {
+    pendingReapproveId = subId;
+    document.getElementById('reapprove-modal').style.display = 'flex';
+    lucide.createIcons();
+    
+    const confirmBtn = document.getElementById('confirm-reapprove-btn');
+    confirmBtn.onclick = async () => {
+        try {
+            await apiCall(`/donations/${subId}/status`, {
+                method: 'PUT',
+                body: JSON.stringify({ status: 'Approved', rejectionReason: null })
+            });
+            
+            // 🔁 Refresh everything from the backend
+            const allDon = await apiCall('/donations/all');
+            globalSubmissions = allDon;
+            const allMsg = await apiCall('/messages/all');
+            messages = allMsg;
+            const evts = await apiCall('/events');
+            events = evts;
+            const goalData = await apiCall('/admin/goal');
+            donationGoal = parseInt(goalData.goal) || 350000;
+            
+            showNotification('check-circle', 'Donation re-approved successfully!');
+            closeReapproveModal();
+            if (currentPath === 'adminDashboard') renderAdmin();
+            updateHomeStats();
+        } catch (err) {
+            showNotification('alert-circle', err.message);
+        }
+    };
+}
+       
+        function closeReapproveModal() {
+            document.getElementById('reapprove-modal').style.display = 'none';
+            pendingReapproveId = null;
+        }
+
+      function submitRejection(e) {
+    e.preventDefault();
+    const subId = document.getElementById('rejection-sub-id').value;
+    const reason = document.getElementById('rejection-reason').value;
+    
+    (async () => {
+        try {
+            await apiCall(`/donations/${subId}/status`, {
+                method: 'PUT',
+                body: JSON.stringify({ status: 'Rejected', rejectionReason: reason })
+            });
+            // 🔁 Refresh everything from the backend
+            const allDon = await apiCall('/donations/all');
+            globalSubmissions = allDon;
+            const allMsg = await apiCall('/messages/all');
+            messages = allMsg;
+            const evts = await apiCall('/events');
+            events = evts;
+            const goalData = await apiCall('/admin/goal');
+            donationGoal = parseInt(goalData.goal) || 350000;
+            
+            showNotification('info', `Donation rejected.`);
+            closeRejectionModal();
+            if (currentPath === 'adminDashboard') renderAdmin();
+            updateHomeStats();
+        } catch (err) {
+            showNotification('alert-circle', err.message);
+        }
+    })();
+}
+
+        function renderAdmin() {
+    // Calculate total approved money correctly using amount from backend
+    const totalMoney = globalSubmissions
+        .filter(x => x.type === 'Money' && x.status === 'Approved')
+        .reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0);
+    
+    document.getElementById('admin-stats').innerHTML = `
+        <div class="glass-card p-6 border-l-4 border-orange-500"><p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Approved Funds</p><p class="text-2xl font-bold gold-gradient">${totalMoney.toFixed(2)} ETB</p></div>
+        <div class="glass-card p-6 border-l-4 border-yellow-500"><p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Pending Review</p><p class="text-2xl font-bold">${globalSubmissions.filter(x=>x.status==='Pending').length}</p></div>
+        <div class="glass-card p-6 border-l-4 border-green-500"><p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Total Approved</p><p class="text-2xl font-bold text-green-500">${globalSubmissions.filter(x=>x.status==='Approved').length}</p></div>
+        <div class="glass-card p-6 border-l-4 border-teal-500"><p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Unreplied Messages</p><p class="text-2xl font-bold text-teal-500">${messages.filter(x=>!x.reply).length}</p></div>
+        <div class="glass-card p-6 border-l-4 border-purple-500 col-span-full"><p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Current Goal</p><p class="text-xl font-bold gold-gradient">${donationGoal.toLocaleString()} ETB</p><p class="text-[9px] text-slate-400">Click "Set Goal" to change</p></div>
+    `;
+    
+    document.getElementById('admin-count').innerText = globalSubmissions.length + ' Submissions';
+    document.getElementById('admin-pending-badge').innerText = globalSubmissions.filter(x=>x.status==='Pending').length + ' Pending Action';
+    
+    // Build table rows with correct database field names
+    document.getElementById('admin-table').innerHTML = globalSubmissions.map(x => {
+        // Use correct field names from backend
+        const donorName = x.donor_name || x.donor || 'Unknown';
+        const donorEmail = x.donor_email || x.donorEmail || '';
+        const donationType = x.type || 'Unknown';
+        const details = x.details || 'No details';
+        const status = x.status || 'Pending';
+        const image = x.image || '';
+        const createdAt = x.created_at || x.timestamp;
+        const formattedDate = createdAt ? new Date(createdAt).toLocaleDateString() : 'Unknown date';
+        const formattedTime = createdAt ? new Date(createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
+        const rejectionReason = x.rejection_reason || x.rejectionReason;
+        
+        return `
+            <tr class="hover:bg-white/5 transition-colors">
+                <td class="p-4 text-[10px] text-slate-500 font-mono">${formattedDate}<br>${formattedTime}</td>
+                <td class="p-4"><p class="font-bold text-xs">${donorName}</p><p class="text-[9px] text-slate-500">${donorEmail}</p></td>
+                <td class="p-4"><span class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${donationType === 'Money' ? 'bg-orange-500/10 text-orange-400' : 'bg-teal-500/10 text-teal-400'}">${donationType}</span></td>
+                <td class="p-4 text-xs max-w-xs truncate">${details}${rejectionReason && status === 'Rejected' ? `<br><span class="text-red-400 text-[9px]">Reason: ${rejectionReason}</span>` : ''}</td>
+                <td class="p-4 text-center">${image ? `<img src="${image}" class="w-12 h-12 mx-auto rounded-lg border border-white/10 cursor-pointer object-cover hover:scale-110 transition-transform" onclick="openReceiptPreview('${image}')" title="Click to view full receipt">` : '<span class="text-slate-500 text-[10px]">No image</span>'}</td>
+                <td class="p-4 text-center"><span class="px-2 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider ${status === 'Approved' ? 'text-green-500 bg-green-500/10 border border-green-500/20' : (status === 'Rejected' ? 'text-red-500 bg-red-500/10 border border-red-500/20' : 'text-yellow-500 bg-yellow-500/10 border border-yellow-500/20')}">${status}</span></td>
+                <td class="p-4 text-right"><div class="flex justify-end gap-2">
+                    ${status === 'Pending' ? `<button onclick="updateStatus('${x.donation_id || x.id}','Approved')" class="p-2 text-green-500 hover:bg-green-500/20 bg-green-500/5 rounded-lg"><i data-lucide="check-circle" class="w-4 h-4"></i></button><button onclick="openRejectionModal('${x.donation_id || x.id}')" class="p-2 text-red-500 hover:bg-red-500/20 bg-red-500/5 rounded-lg"><i data-lucide="slash" class="w-4 h-4"></i></button>` : status === 'Approved' ? `<button onclick="openRejectionModal('${x.donation_id || x.id}')" class="p-2 text-red-500 hover:bg-red-500/20 bg-red-500/5 rounded-lg"><i data-lucide="x-circle" class="w-4 h-4"></i></button>` : status === 'Rejected' ? `<button onclick="openReapproveModal('${x.donation_id || x.id}')" class="p-2 text-green-500 hover:bg-green-500/20 bg-green-500/5 rounded-lg"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>` : ''}
+                    <button onclick="deleteSubmission('${x.donation_id || x.id}')" class="p-2 text-slate-500 hover:bg-red-500/20 hover:text-red-500 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                </div></td>
+              </tr>
+        `;
+    }).join('');
+    
+    // Render messages (already correct)
+    document.getElementById('admin-messages-container').innerHTML = messages.map(msg => `
+        <div class="p-5 bg-white/5 border border-white/10 rounded-xl space-y-4">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="font-bold text-sm">${msg.sender_name || 'Unknown'}</p>
+                    <p class="text-[10px] text-slate-500">${msg.sender_email || ''}</p>
+                </div>
+                <span class="text-[9px] text-slate-600">${msg.created_at ? new Date(msg.created_at).toLocaleDateString() : 'Unknown'}</span>
+            </div>
+            <div class="bg-black/20 p-3 rounded-lg">
+                <p class="text-xs text-slate-300">"${msg.message_text || ''}"</p>
+            </div>
+            ${msg.reply ? `
+                <div class="p-3 bg-teal-500/5 border border-teal-500/20 rounded-lg">
+                    <p class="text-[9px] text-teal-400 font-bold uppercase">Your Reply:</p>
+                    <p class="text-xs text-slate-200">${msg.reply}</p>
+                </div>
+            ` : `
+                <div class="flex gap-2">
+                    <input id="reply-to-${msg.id}" type="text" placeholder="Write a reply..." class="flex-grow bg-white/5 border rounded-lg px-3 py-2 text-xs">
+                    <button onclick="handleAdminReply('${msg.id}')" class="bg-teal-600 px-4 py-2 rounded-lg text-xs font-bold">Reply</button>
+                </div>
+            `}
+        </div>
+    `).join('');
+    
+    renderAdminEvents();
+    lucide.createIcons();
+}
+async function navigateTo(p) {       
+    currentPath = p;
+    const mainNav = document.getElementById('main-nav');
+    const mainFooter = document.getElementById('main-footer');
+    
+    if (p === 'adminDashboard') {
+        // Hide navigation and footer
+        mainNav.classList.add('hidden');
+        mainFooter.classList.add('hidden');
+        document.getElementById('app-content').classList.remove('pt-24');
+        
+        // ✅ First, insert the admin dashboard HTML
+        document.getElementById('app-content').innerHTML = pages.adminDashboard;
+        lucide.createIcons();
+        
+        // ✅ Then fetch fresh data
+        try {
+            const allDon = await apiCall('/donations/all');
+            globalSubmissions = allDon;
+            const allMsg = await apiCall('/messages/all');
+            messages = allMsg;
+            const evts = await apiCall('/events');
+            events = evts;
+            const goalData = await apiCall('/admin/goal');
+            donationGoal = parseInt(goalData.goal) || 350000;
+        } catch (err) {
+            console.warn('Failed to refresh admin data', err);
+        }
+        
+        // ✅ Now render the admin content (elements exist)
+        renderAdmin();
+        return;
+    } else {
+        mainNav.classList.remove('hidden');
+        mainFooter.classList.remove('hidden');
+        document.getElementById('app-content').classList.add('pt-24');
+    }
+
+    // Protected pages
+    if (['donation', 'cleaning', 'profile'].includes(p) && !currentUser) {
+        showNotification('lock', 'Please login to access this section.');
+        p = 'auth';
+    }
+    if (p === 'auth') authMode = 'login';
+    
+    document.getElementById('app-content').innerHTML = pages[p] || pages.home;
+    lucide.createIcons();
+
+    // Profile specific
+    if (p === 'profile' && currentUser) {
+        const displayName = currentUser.name || 'User';
+        const displayEmail = currentUser.email || 'No email';
+        const displayId = currentUser.id || 'Unknown';
+        document.getElementById('p-name-edit').value = displayName;
+        document.getElementById('p-bio-edit').value = currentUser.bio || '';
+        document.getElementById('p-email').innerText = displayEmail;
+        document.getElementById('p-id').innerText = displayId;
+        document.getElementById('p-initials').innerText = displayName[0].toUpperCase();
+        renderUserHistory();
+        if (authToken) {
+            apiCall('/messages/my').then(newMsgs => {
+                messages = newMsgs;
+                renderUserMessages();
+            });
+        } else {
+            renderUserMessages();
+        }
+    }
+
+    if (p === 'events') renderEventsList();
+    if (p === 'home') setTimeout(() => updateHomeStats(), 100);
+    updateNav();
+}
+function renderUserHistory() {
+    const h = document.getElementById('user-history');
+    if (!h) return;
+    const mySubs = getUserSubmissions();
+    if (mySubs.length === 0) {
+        h.innerHTML = `<p class="text-center text-slate-500 py-10">No history found.</p>`;
+        return;
+    }
+    h.innerHTML = mySubs.map(s => {
+        const type = s.type;
+        const details = s.details;
+        const status = s.status;
+        const rejectionReason = s.rejection_reason || s.rejectionReason; // handle both
+        const createdAt = s.created_at ? new Date(s.created_at).toLocaleDateString() : (s.timestamp ? new Date(s.timestamp).toLocaleDateString() : 'Unknown date');
+        return `
+            <div class="p-4 bg-white/5 border border-white/10 rounded-xl flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 bg-orange-500/10 rounded flex items-center justify-center">
+                        <i data-lucide="${type === 'Money' ? 'banknote' : (type === 'Cleaning' ? 'users' : 'package')}"></i>
+                    </div>
+                    <div>
+                        <p class="font-bold text-sm">${type}</p>
+                        <p class="text-[10px] text-slate-500">${createdAt}</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-xs font-medium">${details}</p>
+                    <p class="text-[9px] font-bold uppercase mt-1 ${status === 'Approved' ? 'text-green-500' : (status === 'Rejected' ? 'text-red-500' : 'text-yellow-500')}">${status}</p>
+                    ${rejectionReason && status === 'Rejected' ? `<p class="text-[8px] text-red-400 mt-1">Reason: ${rejectionReason}</p>` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+    lucide.createIcons();
+}
+       function renderUserMessages() {
+        console.log('Rendering messages:', messages);
+    const m = document.getElementById('user-messages');
+    if (!m) return;
+    const myMsgs = messages.filter(msg => msg.sender_email === currentUser?.email || (msg.for_user === currentUser?.email));
+    if (myMsgs.length === 0) {
+        m.innerHTML = `<p class="text-center text-slate-500 py-10">No messages yet.</p>`;
+        return;
+    }
+    m.innerHTML = myMsgs.map(msg => `
+        <div class="p-4 bg-white/5 border border-white/10 rounded-xl space-y-3">
+            <div class="flex justify-between">
+                <p class="text-xs font-semibold ${msg.sender_name === 'Admin System' ? 'text-orange-400' : 'text-slate-300'}">${msg.sender_name}</p>
+                <span class="text-[9px] text-slate-500">${new Date(msg.created_at).toLocaleDateString()}</span>
+            </div>
+            <div class="bg-black/20 p-3 rounded-lg">
+                <p class="text-xs text-slate-300 italic">"${msg.message_text}"</p>
+            </div>
+            ${msg.reply ? `
+                <div class="pl-3 border-l-2 border-teal-500/50">
+                    <p class="text-[10px] text-teal-400 font-bold uppercase">Admin Reply:</p>
+                    <p class="text-xs text-slate-200">${msg.reply}</p>
+                </div>
+            ` : (msg.sender_name !== 'Admin System' ? `<p class="text-[9px] text-yellow-500 font-bold uppercase">Awaiting response...</p>` : '')}
+        </div>
+    `).join('');
+    lucide.createIcons();
+}
+    async function refreshMessages() {
+    if (!authToken) {
+        showNotification('alert-circle', 'Not logged in');
+        return;
+    }
+    try {
+        const newMsgs = await apiCall('/messages/my');
+        messages = newMsgs;
+        renderUserMessages();
+        showNotification('refresh-cw', 'Messages refreshed');
+    } catch (err) {
+        showNotification('alert-circle', err.message);
+    }
+}
+        function updateProfileInfo() {
+            if (currentUser) {
+                currentUser.name = document.getElementById('p-name-edit').value;
+                currentUser.bio = document.getElementById('p-bio-edit').value;
+                document.getElementById('p-initials').innerText = currentUser.name.split(' ').map(x=>x[0]).join('').substring(0,2).toUpperCase();
+                showNotification('user-check', 'Profile updated');
+                updateNav();
+            }
+        }
+
+        function setDonType(t) {
+            currentType = t;
+            document.querySelectorAll('[id^="btn-"]').forEach(b => b.className = 'p-4 rounded-xl bg-white/5 border border-white/10 font-bold text-xs text-slate-400');
+            document.getElementById(`btn-${t}`).className = 'p-4 rounded-xl bg-orange-500/20 border border-orange-500 font-bold text-xs text-white';
+            const isMoney = t === 'money';
+            document.getElementById('bank-info').classList.toggle('hidden', !isMoney);
+            document.getElementById('drop-info').classList.toggle('hidden', isMoney);
+            document.getElementById('form-money').classList.toggle('hidden', !isMoney);
+            document.getElementById('form-items').classList.toggle('hidden', isMoney);
+            if (!isMoney) {
+                const sel = document.getElementById('i-select');
+                sel.innerHTML = t === 'stationery' ? '<option>Exercise Books</option><option>Pens/Pencils</option><option>Mathematical Sets</option>' : '<option>Sweaters</option><option>Jackets</option><option>Trousers</option><option>Shoes</option>';
+            }
+            lucide.createIcons();
+        }
+
+        function handleFile(input, prefix) {
+            const f = input.files[0];
+            if (f) {
+                const r = new FileReader();
+                r.onload = (e) => {
+                    const img = document.getElementById(`${prefix}-preview`);
+                    img.src = e.target.result;
+                    img.classList.remove('hidden');
+                    document.getElementById(`${prefix}-placeholder`).classList.add('hidden');
+                };
+                r.readAsDataURL(f);
+            }
+        }
+
+        async function handleMoneySubmit(e) {
+    e.preventDefault();
+    if (!currentUser) {
+        showNotification('lock', 'Please login first');
+        navigateTo('auth');
+        return;
+    }
+    const preview = document.getElementById('m-preview');
+    if (!preview.src || preview.src.length < 100) {
+        showNotification('alert-circle', 'Please upload receipt.');
+        return;
+    }
+    const donorName = document.getElementById('m-name').value;
+    const amount = parseFloat(document.getElementById('m-amount').value);
+    try {
+        const result = await apiCall('/donations', {
+            method: 'POST',
+            body: JSON.stringify({ donorName, type: 'Money', details: `${amount} ETB`, amount, image: preview.src })
+        });
+        globalSubmissions.unshift({
+            id: result.donationId,
+            donor: donorName,
+            donorEmail: currentUser.email,
+            type: 'Money',
+            details: `${amount} ETB`,
+            amount,
+            image: preview.src,
+            status: 'Pending',
+            timestamp: new Date().toISOString(),
+            rejectionReason: null
+        });
+        showNotification('check-circle', 'Donation submitted!');
+        navigateTo('profile');
+    } catch (err) {
+        showNotification('alert-circle', err.message);
+    }
+}
+
+       
+        async function handleItemSubmit(e) {
+    e.preventDefault();
+    if (!currentUser) {
+        showNotification('lock', 'Please login first');
+        navigateTo('auth');
+        return;
+    }
+    const donorName = document.getElementById('i-name').value;
+    const selected = document.getElementById('i-select').value;
+    const desc = document.getElementById('i-desc').value;
+    try {
+        const result = await apiCall('/donations', {
+            method: 'POST',
+            body: JSON.stringify({ donorName, type: 'Items', details: `${selected} (${desc})` })
+        });
+        globalSubmissions.unshift({
+            id: result.donationId,
+            donor: donorName,
+            donorEmail: currentUser.email,
+            type: 'Items',
+            details: `${selected} (${desc})`,
+            status: 'Pending',
+            timestamp: new Date().toISOString(),
+            rejectionReason: null
+        });
+        showNotification('package', 'Item pledge recorded!');
+        navigateTo('profile');
+    } catch (err) {
+        showNotification('alert-circle', err.message);
+    }
+}
+
+        
+        async function handleCleaningSubmit(e) {
+    e.preventDefault();
+    if (!currentUser) {
+        showNotification('lock', 'Please login first');
+        navigateTo('auth');
+        return;
+    }
+    const volunteerName = document.getElementById('clean-name').value;
+    const target = document.getElementById('clean-target').value;
+    try {
+        const result = await apiCall('/donations', {
+            method: 'POST',
+            body: JSON.stringify({ donorName: volunteerName, type: 'Cleaning', details: `Volunteer at ${target}` })
+        });
+        globalSubmissions.unshift({
+            id: result.donationId,
+            donor: volunteerName,
+            donorEmail: currentUser.email,
+            type: 'Cleaning',
+            details: `Volunteer at ${target}`,
+            status: 'Approved',
+            timestamp: new Date().toISOString(),
+            rejectionReason: null
+        });
+        showNotification('check', 'Registered!');
+        navigateTo('profile');
+    } catch (err) {
+        showNotification('alert-circle', err.message);
+    }
+}
+
+        
+       async function handleGeneralMessage(e) {
+    e.preventDefault();
+    const name = document.getElementById('c-name').value;
+    const email = document.getElementById('c-email').value;
+    const text = document.getElementById('c-msg').value;
+    try {
+        await apiCall('/messages', {
+            method: 'POST',
+            body: JSON.stringify({ senderName: name, senderEmail: email, messageText: text })
+        });
+        showNotification('send', 'Message sent!');
+        e.target.reset();
+        
+        // Refresh the current view if needed
+        if (authToken) {
+            if (currentPath === 'profile') {
+                refreshMessages();
+            } else if (currentPath === 'adminDashboard') {
+                // Directly refresh messages and re-render admin dashboard
+                const newMsgs = await apiCall('/messages/all');
+                messages = newMsgs;
+                renderAdmin();
+            }
+        }
+    } catch (err) {
+        showNotification('alert-circle', err.message);
+    }
+}
+       async function updateStatus(id, stat) {
+    try {
+        await apiCall(`/donations/${id}/status`, {
+            method: 'PUT',
+            body: JSON.stringify({ status: stat, rejectionReason: null })
+        });
+        // Refresh all donations from backend
+        const allDon = await apiCall('/donations/all');
+        globalSubmissions = allDon;
+        const allMsg = await apiCall('/messages/all');
+        messages = allMsg;
+        if (currentPath === 'adminDashboard') renderAdmin();
+        updateHomeStats();
+        showNotification(stat === 'Approved' ? 'check-circle' : 'slash', `Marked as ${stat}`);
+    } catch (err) {
+        showNotification('alert-circle', err.message);
+    }
+}
+
+      async function deleteSubmission(id) {
+    if (!confirm('Delete this submission permanently?')) return;
+    try {
+        await apiCall(`/donations/${id}`, { method: 'DELETE' });
+        // Refresh all donations from backend
+        const allDon = await apiCall('/donations/all');
+        globalSubmissions = allDon;
+        const allMsg = await apiCall('/messages/all');
+        messages = allMsg;
+        showNotification('trash-2', 'Entry removed');
+        if (currentPath === 'adminDashboard') renderAdmin();
+        updateHomeStats();
+    } catch (err) {
+        showNotification('alert-circle', err.message);
+    }
+}
+        
+
+            
+    async function handleAuth(e) {
+    e.preventDefault();
+    const isSigningUp = authMode === 'signup';
+    const email = document.getElementById('a-email').value;
+    const password = document.querySelector('#app-content form input[type="password"]').value;
+
+    if (!email || !password) {
+        showNotification('alert-circle', 'Please fill all fields');
+        return;
+    }
+
+    try {
+        let data;
+        if (isSigningUp) {
+            const name = document.getElementById('a-name')?.value;
+            if (!name) {
+                showNotification('alert-circle', 'Please enter your name');
+                return;
+            }
+            data = await apiCall('/auth/register', {
+                method: 'POST',
+                body: JSON.stringify({ name, email, password })
+            });
+        } else {
+            data = await apiCall('/auth/login', {
+                method: 'POST',
+                body: JSON.stringify({ email, password })
+            });
+        }
+
+        if (data.success) {
+            authToken = data.token;
+            localStorage.setItem('authToken', authToken);
+            currentUser = data.user;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            await loadAllData();
+            showNotification('user', isSigningUp ? "Account Created!" : "Welcome back!");
+            navigateTo('home');
+        } else {
+            showNotification('alert-circle', data.error || 'Authentication failed');
+        }
+    } catch (err) {
+        showNotification('alert-circle', err.message);
+    }
+}
+
+
+        function toggleAuth() {
+            authMode = authMode === 'login' ? 'signup' : 'login';
+            document.getElementById('a-title').innerText = authMode === 'login' ? 'Sign In' : 'Sign Up';
+            document.getElementById('a-signup').classList.toggle('hidden', authMode === 'login');
+            document.getElementById('a-toggle-text').innerText = authMode === 'login' ? 'New to Charity Club?' : 'Already have an account?';
+            document.getElementById('a-toggle-link').innerText = authMode === 'login' ? 'Sign Up' : 'Sign In';
+        }
+
+       function updateNav() {
+    const act = document.getElementById('user-nav-actions');
+    const mob = document.getElementById('mobile-auth-actions');
+    if (currentUser) {
+        // Handle missing name (admin)
+        const userName = currentUser.name || (currentUser.role === 'admin' ? 'Admin' : 'User');
+        const firstLetter = userName[0] || 'A';
+        act.innerHTML = `<button onclick="navigateTo('profile')" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10"><div class="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-[10px]">${firstLetter}</div><span class="text-xs">${userName.split(' ')[0]}</span></button>`;
+        mob.innerHTML = `<button onclick="navigateTo('profile');toggleMobileMenu()" class="text-orange-400 text-left">My Profile</button><br><button onclick="handleLogout()" class="text-red-400 text-left">Logout</button>`;
+    } else {
+        act.innerHTML = `<button onclick="navigateTo('auth')" class="text-sm font-semibold hover:text-orange-400">Sign In</button>`;
+        mob.innerHTML = `<button onclick="navigateTo('auth');toggleMobileMenu()" class="text-orange-400 text-left">Sign In</button>`;
+    }
+}
+        function handleLogout() {
+    currentUser = null;
+    authToken = null;                     
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('currentUser'); 
+    showNotification('log-out', 'Logged out.');
+    navigateTo('home');
+}
+    function closeAdminDashboard() {
+    currentUser = null;
+    authToken = null;
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('currentUser');
+    showNotification('log-out', 'Admin session ended. Please log in again.');
+    navigateTo('home');
+}
+        function handleLogoClick() { logoClicks++; if (logoClicks === 3) { logoClicks = 0; document.getElementById('admin-modal').style.display = 'flex'; } setTimeout(() => logoClicks = 0, 3000); }
+        function closeAdmin() { document.getElementById('admin-modal').style.display = 'none'; document.getElementById('admin-pass').value = ''; }
+       async function verifyAdmin() {
+    const pin = document.getElementById('admin-pass').value;
+    try {
+        const response = await apiCall('/admin/verify', {
+            method: 'POST',
+            body: JSON.stringify({ pin })
+        });
+        if (response.success) {
+            authToken = response.token;
+            localStorage.setItem('authToken', authToken);
+            currentUser = { role: 'admin' };
+            closeAdmin();
+            navigateTo('adminDashboard');
+        } else {
+            showNotification('shield-off', 'Access Denied');
+        }
+    } catch (err) {
+        showNotification('shield-off', 'Invalid PIN');
+    }
+}
+        
+        function showNotification(i, m) {
+            const n = document.getElementById('notification');
+            document.getElementById('notif-icon').innerHTML = `<i data-lucide="${i}"></i>`;
+            document.getElementById('notif-message').innerText = m;
+            lucide.createIcons();
+            n.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => n.classList.add('translate-y-20', 'opacity-0'), 3000);
+        }
+        function toggleMobileMenu() {
+            const s = document.getElementById('mobile-menu-sidebar');
+            const o = document.getElementById('mobile-overlay');
+            const open = s.classList.contains('translate-x-full');
+            s.classList.toggle('translate-x-full', !open);
+            o.classList.toggle('hidden', !open);
+            setTimeout(() => o.classList.toggle('opacity-100', open), 10);
+        }
+
+        loadGoalFromStorage();
+        loadEventsFromStorage();
+        window.addEventListener('DOMContentLoaded', async () => {
+    await loadAllData();
+    if (!currentPath) currentPath = 'home';
+    navigateTo(currentPath);
+});
+        
+        window.openGoalModal = openGoalModal;
+        window.closeGoalModal = closeGoalModal;
+        window.setDonationGoal = setDonationGoal;
+        window.openPasswordModal = openPasswordModal;
+        window.closePasswordModal = closePasswordModal;
+        window.changeAdminPassword = changeAdminPassword;
+        window.openReceiptPreview = openReceiptPreview;
+        window.closeReceiptPreview = closeReceiptPreview;
+        window.openRejectionModal = openRejectionModal;
+        window.closeRejectionModal = closeRejectionModal;
+        window.openReapproveModal = openReapproveModal;
+        window.closeReapproveModal = closeReapproveModal;
+        window.submitRejection = submitRejection;
+        window.openEventModal = openEventModal;
+        window.closeEventModal = closeEventModal;
+        window.saveEvent = saveEvent;
+        window.editEvent = editEvent;
+        window.deleteEventById = deleteEventById;
+        // Ensure handleAdminReply is global
+if (typeof handleAdminReply !== 'function') {
+    window.handleAdminReply = async function(id) {
+        const input = document.getElementById(`reply-to-${id}`);
+        if (!input) {
+            console.error('Reply input not found for id:', id);
+            return;
+        }
+        const replyText = input.value.trim();
+        if (!replyText) return;
+        try {
+            await apiCall(`/messages/${id}/reply`, {
+                method: 'PUT',
+                body: JSON.stringify({ reply: replyText })
+            });
+            const idx = messages.findIndex(m => m.id === id);
+            if (idx !== -1) messages[idx].reply = replyText;
+            showNotification('message-square', 'Reply sent');
+            if (currentPath === 'adminDashboard') renderAdmin();
+        } catch (err) {
+            showNotification('alert-circle', err.message);
+        }
+    };
+}
+    </script>
+</body>
+</html>
